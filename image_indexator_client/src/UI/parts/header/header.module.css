@@ -1,0 +1,45 @@
+.appHeader{
+    width: 100vw;
+    height: 10vh;  
+    display:flex;
+    top:0;
+    background-color: darkslategrey;
+    font-size: 3vh;
+    justify-content: space-between;
+    font-weight:bolder;
+    font-family: 'Courier New', Courier, monospace;
+}
+.appHeaderPart{
+    height: '100%';
+    max-width: '50%';
+    box-sizing: border-box;
+    display:inline;
+    padding: 15px;
+    color:whitesmoke;
+}
+#leftHeaderPart{
+    margin: 0px 0px 0px calc(10vw - 15px)
+}
+#rightHeaderPart{
+    margin: 0px calc(10vw - 15px) 0px 0px
+}
+.loginBtn{
+    padding: 7px 20px 7px 20px;
+    font-weight: inherit;
+    border: 1px solid whitesmoke;
+    border-radius: 10%;
+    margin: 1%;
+    background-color: inherit;
+    color: inherit;
+    font-size: 2vh;
+}
+.loginBtn:hover{
+    background-color: rgba(0,0,0,0.3);
+    cursor:pointer;
+}
+.verticalCentered{
+    position: relative;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+  }

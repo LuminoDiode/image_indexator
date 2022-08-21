@@ -1,0 +1,10 @@
+.appFooter{
+    background-color: darkslategrey;
+    min-height: 10vh;
+    font-family: 'Courier New', Courier, monospace;
+}
+.footerText{
+    width: 100%;
+    text-align: center;
+    font-size:2.5vh;
+}

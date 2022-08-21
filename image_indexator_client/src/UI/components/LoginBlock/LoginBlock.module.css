@@ -1,0 +1,15 @@
+.loginBtn{
+    padding: 7px 20px 7px 20px;
+    font-weight: inherit;
+    font-family: inherit;
+    border: 1px solid whitesmoke;
+    border-radius: 10%;
+    margin: 1%;
+    background-color: inherit;
+    color: inherit;
+    font-size: 2vh;
+}
+.loginBtn:hover{
+    background-color: rgba(0,0,0,0.3);
+    cursor:pointer;
+}

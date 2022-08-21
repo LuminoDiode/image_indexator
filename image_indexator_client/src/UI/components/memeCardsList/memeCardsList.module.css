@@ -1,0 +1,8 @@
+.memeCardsList{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    width: 100%;
+    min-height: 10vh;
+    border: 5px solid whitesmoke;
+}

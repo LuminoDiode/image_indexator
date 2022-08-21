@@ -1,0 +1,7 @@
+.loginInput{
+    width: 90%;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bolder;
+    font-size: calc(10px + 1vw);
+    margin: 1% 5%;
+}
