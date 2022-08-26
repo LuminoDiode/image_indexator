@@ -12,7 +12,7 @@ const LoginForm = ({onSuccessCallback, onFailCallback, logoutFunction: logoutFun
 
     async function tryLoginOrRigster() {
         const dataToSend = {email:loginValue, password: passwordValue};
-        const req = await axios.post("https://localhost:7099/api/auth",dataToSend,{headers: {'Content-Type': 'application/json' }});
+        const req = await axios.post("http://localhost:5005/api/auth",dataToSend,{headers: {'Content-Type': 'application/json' }});
         console.log(req);
         const requestResult = req.data;
         if(requestResult.token){

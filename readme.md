@@ -1,0 +1,2 @@
+# image_indexator
+My first project with React + ASP stack. Also uses Postgres + EF as database, nginx as proxy, docker and docker-compose for deployment. Client code is really bad, backend is not so bad (probably).

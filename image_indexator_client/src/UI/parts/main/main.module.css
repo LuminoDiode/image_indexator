@@ -5,15 +5,29 @@
 
 .searchInput{
     padding: 15px;
-    margin: 5vh 10vw;
+    margin: 5vh 10vw 1vh 10vw;
     width: 80vw;
-    height: (10px + 10vh);
     box-sizing: border-box;
     font-family:'Courier New', Courier, monospace;
     font-weight: bolder;
     font-size: calc(10px + 1vw);
     background-color: inherit;
     border: 5px solid darkslategrey;
+    border-radius: 15px;
+    align-self: center;
+}
+
+.imageUploadBox{
+    padding: 0;
+    margin: 1vh 10vw 5vh 10vw;
+    width: 80vw;
+    box-sizing: border-box;
+    font-family:'Courier New', Courier, monospace;
+    font-weight: bolder;
+    font-size: calc(10px + 1vw);
+    text-align: center;
+    background-color: lightgrey;
+    border: 5px solid darkblue;
     border-radius: 15px;
     align-self: center;
 }

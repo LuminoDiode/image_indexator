@@ -94,10 +94,11 @@ namespace image_indexator_backend
 				app.UseSwaggerUI();
 			}
 
-			app.UseHttpsRedirection();
-
+			//app.UseHttpsRedirection();
+			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseAuthentication();
 			app.UseRouting();
+			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseAuthorization();
 
 			app.MapControllers();

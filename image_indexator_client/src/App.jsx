@@ -8,6 +8,7 @@ import AppHeader from './UI/parts/header/header';
 import AppMain from './UI/parts/main/main';
 import { useCookies } from 'react-cookie';
 import CookieConsent from "react-cookie-consent";
+import Modal from 'react-modal';
 
 function App() {
 
@@ -17,12 +18,14 @@ function App() {
     loadAndSetMemes();
   }, [])
 
-  async function loadAndSetMemes() {
+  async function loadAndSetMemes() { // if debug
     const response = await axios.get('https://jsonplaceholder.typicode.com/photos');
     const asMemes = response.data.slice(0, 8).map(pht => { return { metaText: pht.title, imageUrl: pht.url }; });
-    console.log(asMemes);
+    //console.log(asMemes);
     setMemes(asMemes);
   }
+
+  Modal.setAppElement('#root');
 
   return (
     <div>

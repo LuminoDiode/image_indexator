@@ -3,7 +3,7 @@ import MemeCard from "../memeCard/memeCard";
 import cl from './memeCardsList.module.css';
 
 const MemeCardsList = ({memesList,...props})=>{
-    console.log(memesList);
+    //console.log(memesList);
     return(
         <div className={cl.memeCardsList}>
             {memesList.map((meme,index) => 

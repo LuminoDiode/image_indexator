@@ -5,18 +5,47 @@ import MyModal from "../modal/MyModal";
 import cl from './LoginBlock.module.css';
 import { useCookies } from 'react-cookie';
 
-const LoginBlock = ({...props}) => {
+const LoginBlock = ({ onSuccessCallback, onFailCallback, ...props }) => {
+    const [jwtTokenCookie, setJwtTokenCookie] = useCookies(['JwtToken']);
+    const [emailCookie, setEmailCookie] = useCookies(['Email']);
+
     const [isAuthed, setAuthed] = useState(checkIsAuthed());
     const [isLoginModalVisible, setLoginModalVisible] = useState(false)
-    const [emailCookie,setEmailCookie] = useCookies(['Email']);
+
+    const onLoad = useEffect(() => {
+        console.log('isAuthed=' + isAuthed);
+    }, []);
+
     function checkIsAuthed() {
-        return (axios.get("https://localhost:7099/api/auth").code == 200);
+       // console.log('in checkIsAuthed func');
+        var check;
+        try {
+            check = (axios.get("http://localhost:5005/api/auth", {
+                headers: { 'Authorization': 'Bearer ' + jwtTokenCookie['JwtToken'] }
+            })).then(result=> {
+                check=result.status;
+                //console.log(result);
+                if (check == 200) {
+                    //console.log('Returned true from checkIsAuthed 2');
+                    return true;
+                }
+                else {
+                   // console.log('Returned false from checkIsAuthed 3');
+                    return false;
+                }
+            });
+        }
+        catch {
+            //console.log('Returned false from checkIsAuthed 1');
+            return false;
+        }
+
     }
 
-    function logoutFunc(){
-        setEmailCookie('JwtToken','');
-        setEmailCookie('Email','');
+    function logoutFunc() {
         setAuthed(false);
+        setEmailCookie('JwtToken', '');
+        setEmailCookie('Email', '');
     }
 
     return (
@@ -24,10 +53,10 @@ const LoginBlock = ({...props}) => {
             {(isAuthed == false) ?
                 <div>
                     <div>
-                        <button className={cl.loginBtn} onClick={() => setLoginModalVisible(true)}>Login</button>
+                        <button className={cl.loginBtn} onClick={() => { console.log(!isLoginModalVisible); setLoginModalVisible(!isLoginModalVisible); }}>Login</button>
                     </div>
                     <MyModal isVisible={isLoginModalVisible} setVisible={setLoginModalVisible}>
-                        <LoginForm onSuccessCallback={() => { setAuthed(true); setLoginModalVisible(false); }}>
+                        <LoginForm onSuccessCallback={() => { setAuthed(true); setLoginModalVisible(false); }} onFailCallback={onFailCallback}>
 
                         </LoginForm>
                     </MyModal>
@@ -35,10 +64,10 @@ const LoginBlock = ({...props}) => {
                 :
                 <div>
                     <span>
-                    Account: {emailCookie.Email.split('@')[0]}
+                        Account: {emailCookie['Email']}
                     </span>
-                    <div style={{display:'flex',justifyContent:'center'}}>
-                    <button className={cl.loginBtn} onClick={e=>{logoutFunc(); setAuthed(false); e.stopPropagation();}}>Logout</button>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <button className={cl.loginBtn} onClick={e => { logoutFunc(); setAuthed(false); e.stopPropagation(); }}>Logout</button>
                     </div>
                 </div>
             }

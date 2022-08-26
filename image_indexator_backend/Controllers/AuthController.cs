@@ -14,7 +14,6 @@ namespace image_indexator_backend.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	[AllowAnonymous]
 	[Consumes("application/json")]
 	[Produces("application/json")]
 	public sealed class AuthController : ControllerBase
@@ -30,7 +29,12 @@ namespace image_indexator_backend.Controllers
 			_logger = logger;
 		}
 
+		[HttpGet]
+		[Authorize]
+		public IActionResult Validate() => Ok(this.HttpContext.Request.Headers);
+
 		[HttpPost]
+		[AllowAnonymous]
 		public async Task<IActionResult> Login([FromBody][Required] AuthenticateRequest request)
 		{
 			IdentityUser? usr = await _userManager.FindByEmailAsync(request.Email);
@@ -50,7 +54,7 @@ namespace image_indexator_backend.Controllers
 			{
 				if (ModelState.IsValid)
 				{
-					IdentityResult registerResult = await _userManager.CreateAsync(new IdentityUser(Base64UrlEncoder.Encode(SHA1.HashData(Encoding.UTF8.GetBytes("User")))) { Email = request.Email }, request.Password);
+					IdentityResult registerResult = await _userManager.CreateAsync(new IdentityUser(Base64UrlEncoder.Encode(SHA1.HashData(Encoding.UTF8.GetBytes(request.Email)))) { Email = request.Email }, request.Password);
 					if (registerResult.Succeeded)
 					{
 						_logger.LogDebug($"Created new user in database with email \'{request.Email}\' by request from \'{base.HttpContext.Connection.RemoteIpAddress}\'.");

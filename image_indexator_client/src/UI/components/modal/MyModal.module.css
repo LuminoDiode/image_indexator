@@ -1,6 +1,7 @@
 .myModal {
-    position: fixed;
-    top: 0;
+    position: absolute;
+    top: 240%;
+    transform: translateX(-30%);
     bottom: 0;
     right: 0;
     left: 0;
@@ -9,10 +10,10 @@
 }
 
 .myModalContent {
-    padding: 25px;
+    padding: 0px;
     background: white;
-    border-radius: 16px;
-    min-width: 250px;
+    border-radius: 8px;
+    min-width: 200px;
 }
 
 .myModal.active {
