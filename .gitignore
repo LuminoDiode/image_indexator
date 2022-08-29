@@ -4,7 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 nginx.exe
-wwwroot/staticfiles/
+[Ww]wwroot/staticfiles/*
 
 # User-specific files
 *.rsuser
@@ -479,3 +479,5 @@ $RECYCLE.BIN/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+secrets.json
