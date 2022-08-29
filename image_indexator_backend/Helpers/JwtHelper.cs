@@ -14,7 +14,7 @@ namespace image_indexator_backend.Helpers
 			byte[] key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]);
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
-				Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()), new Claim("email", user.Email) }),
+				Subject = new ClaimsIdentity(new Claim[] { new Claim("Id", user.Id.ToString()), new Claim("Email", user.Email) }),
 				Expires = DateTime.UtcNow.AddDays(configuration.GetValue<double>("Jwt:TokenLifespanDays")),
 				SigningCredentials = new SigningCredentials(
 					new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)

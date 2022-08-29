@@ -1,4 +1,4 @@
-﻿using image_indexator_backend.Models;
+﻿using image_indexator_backend.Models.Image;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +8,7 @@ namespace image_indexator_backend.Repository
 	{
 		public IndexatorDbContext(DbContextOptions options) : base(options)
 		{
-			Database.EnsureCreated();
+			//Database.EnsureCreated();
 		}
 
 		protected override void OnModelCreating(ModelBuilder builder)

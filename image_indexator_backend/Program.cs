@@ -2,6 +2,7 @@ using image_indexator_backend.Repository;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -32,13 +33,14 @@ namespace image_indexator_backend
 			}).AddJwtBearer(opts =>
 			   {
 				   opts.RequireHttpsMetadata = false;
-				   opts.SaveToken = true;
+				   opts.SaveToken = false;
 				   opts.TokenValidationParameters = new TokenValidationParameters
 				   {
 					   ValidateIssuerSigningKey = true,
 					   IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"])),
 					   ValidateAudience = false,
 					   ValidateIssuer = false,
+					   //NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier
 				   };
 			   }
 			).AddIdentityServerJwt();
@@ -96,12 +98,18 @@ namespace image_indexator_backend
 
 			//app.UseHttpsRedirection();
 			app.Use(async (context, next) => { await next.Invoke(); });
+			app.UseStaticFiles();
+			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseAuthentication();
+			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseRouting();
 			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseAuthorization();
+			app.Use(async (context, next) => { await next.Invoke(); });
 
 			app.MapControllers();
+
+			app.Services.CreateScope().ServiceProvider.GetRequiredService<IndexatorDbContext>().Database.EnsureCreated();
 
 			app.Run();
 		}
