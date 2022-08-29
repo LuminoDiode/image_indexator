@@ -5,7 +5,7 @@
 
 .searchInput{
     padding: 15px;
-    margin: 5vh 10vw 1vh 10vw;
+    margin: 1vh 10vw 1vh 10vw;
     width: 80vw;
     box-sizing: border-box;
     font-family:'Courier New', Courier, monospace;
@@ -19,9 +19,10 @@
 
 .imageUploadBox{
     padding: 0;
-    margin: 1vh 10vw 5vh 10vw;
+    margin: 0vh 10vw;
     width: 80vw;
-    box-sizing: border-box;
+    display:block;
+    box-sizing:border-box;  
     font-family:'Courier New', Courier, monospace;
     font-weight: bolder;
     font-size: calc(10px + 1vw);
@@ -29,5 +30,4 @@
     background-color: lightgrey;
     border: 5px solid darkblue;
     border-radius: 15px;
-    align-self: center;
 }

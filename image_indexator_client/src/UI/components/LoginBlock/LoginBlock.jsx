@@ -20,7 +20,8 @@ const LoginBlock = ({ onSuccessCallback, onFailCallback, ...props }) => {
        // console.log('in checkIsAuthed func');
         var check;
         try {
-            check = (axios.get("http://localhost:5005/api/auth", {
+            const host = window.location.protocol + "//" + window.location.host;
+            check = (axios.get(host+'/api/auth', {
                 headers: { 'Authorization': 'Bearer ' + jwtTokenCookie['JwtToken'] }
             })).then(result=> {
                 check=result.status;

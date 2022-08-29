@@ -24,12 +24,21 @@ using image_indexator_backend.Models.Image;
 
 namespace image_indexator_backend.Controllers
 {
+	public static class ImgExts
+	{
+		public static ImageWebResponse ToWebResponse(this Image image)
+		{
+			return new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(ImageController.uploadsPath, image.Id.ToString() + ".jpeg").Replace('\\', '/') };
+		}
+	}
+
+
 	[ApiController]
 	[Route("api/[controller]")]
 	public sealed class ImageController : ControllerBase
 	{
-		const string uploadsPath = @"\staticfiles\images";
-		const int maxImageSizeBytes = 500 * 1024;
+		internal const string uploadsPath = @"\staticfiles\images";
+		internal const int maxImageSizeBytes = 500 * 1024;
 
 		//private readonly UserManager<IdentityUser> _userManager;
 		private readonly IConfiguration _configuration;
@@ -47,6 +56,11 @@ namespace image_indexator_backend.Controllers
 
 		[HttpGet]
 		[AllowAnonymous]
+		[Route("{id:int}")]
+		public async Task<IActionResult> GetImageByRoute([FromRoute][Required] int Id) => await GetImage(Id);
+
+		[HttpGet]
+		[AllowAnonymous]
 		public async Task<IActionResult> GetImage([FromBody][Required] int Id)
 		{
 			var image = await this._dbContext.Images.FindAsync(Id);
@@ -56,13 +70,28 @@ namespace image_indexator_backend.Controllers
 				return BadRequest(ModelState);
 			}
 
-			return Ok(new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(uploadsPath, Id.ToString() + ".jpeg").Replace('\\','/') });
+			return Ok(image.ToWebResponse());
 		}
 
-		[HttpGet]
+
+		[HttpPost]
 		[AllowAnonymous]
-		[Route("{id:int}")]
-		public async Task<IActionResult> GetImageQuery([FromRoute][Required] int Id) => await GetImage(Id);
+		public async Task<IActionResult> SearchImages([FromBody][Required] ImageQueryRequest request)
+		{
+#if RELEASE
+			throw new NotImplementedException();
+#endif
+			var images = this._dbContext.Images.AsQueryable();
+
+			if(string.IsNullOrEmpty(request.Query))
+				images = images.OrderByDescending(img => img.MetadataVector.Rank(EF.Functions.WebSearchToTsQuery(request.Query)));
+			else
+				images = images.Reverse();
+
+			images = images.Take(request.maxCount ?? 100);
+
+			return Ok((await images.ToListAsync()).Select(x=>x.ToWebResponse()));
+		}
 
 
 		const string AllowedFormat = @"image/jpeg";
@@ -71,7 +100,7 @@ namespace image_indexator_backend.Controllers
 		[Consumes(@"multipart/form-data")]
 		public async Task<IActionResult> AddImage([FromForm][Required] IFormFile file, [FromForm][Required] string metadata)
 		{
-			if (file.ContentType!= AllowedFormat)
+			if (file.ContentType != AllowedFormat)
 			{
 				ModelState.AddModelError("FileExtensionError", "Only jpeg files are allowed for this action.");
 				return BadRequest(ModelState);

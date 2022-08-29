@@ -1,7 +1,5 @@
 import axios from "axios";
 import React, { useEffect, useState, useRef } from "react";
-import LoginForm from "../LoginModal/LoginForm";
-import MyModal from "../modal/MyModal";
 import cl from './ImageUploadBlock.module.css';
 import { useCookies } from 'react-cookie';
 import { FileDrop } from "react-file-drop";
@@ -73,7 +71,8 @@ const ImageUploadBlock = ({ ...props }) => {
         const compressedFile = await imageCompression(ImageUploadBlock.currentFile, options);
         console.log(`File converted to JPEG and compressed to ${compressedFile.size / 1024} KB`);
 
-        var result = await axios.put('http://localhost:5005/api/image', { file: compressedFile, metadata: imageMetadata }, {
+        const host = window.location.protocol + "//" + window.location.host;
+        var result = await axios.put(host+'/api/image', { file: compressedFile, metadata: imageMetadata }, {
             headers: {
                 'content-type': 'multipart/form-data',
                 'Authorization': 'Bearer ' + getCookie['JwtToken']
