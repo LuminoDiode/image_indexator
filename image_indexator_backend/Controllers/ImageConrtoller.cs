@@ -24,15 +24,6 @@ using image_indexator_backend.Models.Image;
 
 namespace image_indexator_backend.Controllers
 {
-	public static class ImgExts
-	{
-		public static ImageWebResponse ToWebResponse(this Image image)
-		{
-			return new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(ImageController.uploadsPath, image.Id.ToString() + ".jpeg").Replace('\\', '/') };
-		}
-	}
-
-
 	[ApiController]
 	[Route("api/[controller]")]
 	public sealed class ImageController : ControllerBase
@@ -45,6 +36,12 @@ namespace image_indexator_backend.Controllers
 		private readonly ILogger _logger;
 		private readonly IndexatorDbContext _dbContext;
 		private readonly IWebHostEnvironment _environment;
+
+
+		public ImageWebResponse ImageToResponse(Image image)
+		{
+			return new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(this._environment.ContentRootPath, ImageController.uploadsPath, image.Id.ToString() + ".jpeg").Replace('\\', '/') };
+		}
 
 		public ImageController(IConfiguration config, ILogger<AuthController> logger, IndexatorDbContext dbContext, IWebHostEnvironment environment)
 		{
@@ -70,7 +67,7 @@ namespace image_indexator_backend.Controllers
 				return BadRequest(ModelState);
 			}
 
-			return Ok(image.ToWebResponse());
+			return Ok(ImageToResponse(image));
 		}
 
 
@@ -86,11 +83,11 @@ namespace image_indexator_backend.Controllers
 			if(string.IsNullOrEmpty(request.Query))
 				images = images.OrderByDescending(img => img.MetadataVector.Rank(EF.Functions.WebSearchToTsQuery(request.Query)));
 			else
-				images = images.Reverse();
+				images = images.Select(x=> x);
 
 			images = images.Take(request.maxCount ?? 100);
 
-			return Ok((await images.ToListAsync()).Select(x=>x.ToWebResponse()));
+			return Ok((await images.ToListAsync()).Select(x=>ImageToResponse(x)));
 		}
 
 
@@ -125,8 +122,10 @@ namespace image_indexator_backend.Controllers
 			}
 			await _dbContext.SaveChangesAsync();
 
-			var newFilePath = Path.Join(this._environment.WebRootPath, uploadsPath);
+
+			var newFilePath = Path.Join(this._environment.ContentRootPath, uploadsPath);
 			var newFileName = Path.Join(newFilePath, added.Entity.Id.ToString() + ".jpeg");
+			_logger.LogInformation($"Saving user-added image as {newFileName}");
 			Directory.CreateDirectory(newFilePath);
 
 			var gotFileStream = file.OpenReadStream();

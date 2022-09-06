@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import LoginBlock from "../../components/LoginBlock/LoginBlock";
-import LoginForm from "../../components/LoginModal/LoginForm";
-import MyModal from "../../components/modal/MyModal";
 import cl from './header.module.css';
 
 const AppHeader = ({ ...props}) => {

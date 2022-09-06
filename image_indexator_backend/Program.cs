@@ -32,7 +32,9 @@ namespace image_indexator_backend
 				opts.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 			}).AddJwtBearer(opts =>
 			   {
-				   opts.RequireHttpsMetadata = false;
+				   if (builder.Environment.IsDevelopment()) opts.RequireHttpsMetadata = false;
+				   else opts.RequireHttpsMetadata = true;
+		
 				   opts.SaveToken = false;
 				   opts.TokenValidationParameters = new TokenValidationParameters
 				   {
@@ -50,7 +52,6 @@ namespace image_indexator_backend
 				opts.Password.RequireLowercase = true;
 				opts.Password.RequireUppercase = true;
 				opts.Password.RequireDigit = true;
-				opts.Password.RequiredUniqueChars = 2;
 				opts.Password.RequireNonAlphanumeric = false;
 				opts.User.RequireUniqueEmail = true;
 			})
@@ -86,15 +87,22 @@ namespace image_indexator_backend
 				}});
 			});
 
+			
+
 			WebApplication app = builder.Build();
-
-
 
 			if (app.Environment.IsDevelopment())
 			{
 				app.UseSwagger();
 				app.UseSwaggerUI();
 			}
+
+			app.UseCors(opts =>
+			{
+				opts.AllowAnyOrigin();
+				opts.AllowAnyMethod();
+				opts.AllowAnyHeader();
+			});
 
 			//app.UseHttpsRedirection();
 			app.Use(async (context, next) => { await next.Invoke(); });

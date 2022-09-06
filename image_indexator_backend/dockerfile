@@ -1,0 +1,22 @@
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+WORKDIR /app
+EXPOSE 5001
+EXPOSE 5002
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /src
+COPY ["image_indexator_backend.csproj", "image_indexator_backend/"]
+RUN dotnet restore "image_indexator_backend/image_indexator_backend.csproj"
+RUN dotnet dev-certs https --trust
+COPY . ./image_indexator_backend
+WORKDIR "/src/image_indexator_backend"
+RUN dotnet build "image_indexator_backend.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "image_indexator_backend.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /root/.dotnet/corefx/cryptography/x509stores/my/* /root/.dotnet/corefx/cryptography/x509stores/my/
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "image_indexator_backend.dll"]

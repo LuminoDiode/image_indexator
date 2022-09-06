@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+  client:
+    restart: always
+    image: luminodiode/image_indexator_client
+    build: 
+      context: ./image_indexator_client
+      dockerfile: ./dockerfile
+
+  backend:
+    restart: always
+    image: luminodiode/image_indexator_backend
+    build: 
+      context: ./image_indexator_backend
+      dockerfile: ./dockerfile
+
+  proxy:
+    restart: always
+    image: nginx
+
+  database:
+    restart: always
+    image: postgres
+  
