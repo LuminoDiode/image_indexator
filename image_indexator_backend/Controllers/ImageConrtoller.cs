@@ -28,7 +28,7 @@ namespace image_indexator_backend.Controllers
 	[Route("api/[controller]")]
 	public sealed class ImageController : ControllerBase
 	{
-		internal const string uploadsPath = @"\staticfiles\images";
+		internal const string uploadsPath = @"/staticfiles/images";
 		internal const int maxImageSizeBytes = 500 * 1024;
 
 		//private readonly UserManager<IdentityUser> _userManager;
@@ -40,7 +40,7 @@ namespace image_indexator_backend.Controllers
 
 		public ImageWebResponse ImageToResponse(Image image)
 		{
-			return new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(this._environment.ContentRootPath, ImageController.uploadsPath, image.Id.ToString() + ".jpeg").Replace('\\', '/') };
+			return new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(ImageController.uploadsPath, image.Id.ToString() + ".jpeg").Replace('\\', '/') };
 		}
 
 		public ImageController(IConfiguration config, ILogger<AuthController> logger, IndexatorDbContext dbContext, IWebHostEnvironment environment)
@@ -123,7 +123,7 @@ namespace image_indexator_backend.Controllers
 			await _dbContext.SaveChangesAsync();
 
 
-			var newFilePath = Path.Join(this._environment.ContentRootPath, uploadsPath);
+			var newFilePath = Path.Join(this._environment.WebRootPath, uploadsPath);
 			var newFileName = Path.Join(newFilePath, added.Entity.Id.ToString() + ".jpeg");
 			_logger.LogInformation($"Saving user-added image as {newFileName}");
 			Directory.CreateDirectory(newFilePath);
