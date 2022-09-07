@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -15,7 +17,7 @@ namespace image_indexator_backend
 		public static void Main(string[] args)
 		{
 			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-			builder.Configuration.AddJsonFile("secrets.json").Build();
+			builder.Configuration.AddJsonFile("/run/secrets/backendsecrets.json", false).Build();
 
 			builder.Host.ConfigureLogging(opts =>
 			{
@@ -87,7 +89,7 @@ namespace image_indexator_backend
 				}});
 			});
 
-			
+			builder.Services.AddDirectoryBrowser();
 
 			WebApplication app = builder.Build();
 
@@ -106,7 +108,8 @@ namespace image_indexator_backend
 
 			//app.UseHttpsRedirection();
 			app.Use(async (context, next) => { await next.Invoke(); });
-			app.UseStaticFiles();
+			app.UseStaticFiles("/staticfiles");
+			app.UseDirectoryBrowser("/staticfiles");
 			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseAuthentication();
 			app.Use(async (context, next) => { await next.Invoke(); });

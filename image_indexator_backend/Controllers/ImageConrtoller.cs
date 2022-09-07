@@ -28,7 +28,8 @@ namespace image_indexator_backend.Controllers
 	[Route("api/[controller]")]
 	public sealed class ImageController : ControllerBase
 	{
-		internal const string uploadsPath = @"/staticfiles/images";
+		internal const string uploadsPath = @"/images";
+		internal const string downloadsPath = @"/staticfiles/images";
 		internal const int maxImageSizeBytes = 500 * 1024;
 
 		//private readonly UserManager<IdentityUser> _userManager;
@@ -40,7 +41,7 @@ namespace image_indexator_backend.Controllers
 
 		public ImageWebResponse ImageToResponse(Image image)
 		{
-			return new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(ImageController.uploadsPath, image.Id.ToString() + ".jpeg").Replace('\\', '/') };
+			return new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(ImageController.downloadsPath, image.Id.ToString() + ".jpeg").Replace('\\', '/') };
 		}
 
 		public ImageController(IConfiguration config, ILogger<AuthController> logger, IndexatorDbContext dbContext, IWebHostEnvironment environment)
@@ -75,19 +76,16 @@ namespace image_indexator_backend.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> SearchImages([FromBody][Required] ImageQueryRequest request)
 		{
-#if RELEASE
-			throw new NotImplementedException();
-#endif
 			var images = this._dbContext.Images.AsQueryable();
 
-			if(string.IsNullOrEmpty(request.Query))
+			if (string.IsNullOrEmpty(request.Query))
 				images = images.OrderByDescending(img => img.MetadataVector.Rank(EF.Functions.WebSearchToTsQuery(request.Query)));
 			else
-				images = images.Select(x=> x);
+				images = images.Select(x => x);
 
 			images = images.Take(request.maxCount ?? 100);
 
-			return Ok((await images.ToListAsync()).Select(x=>ImageToResponse(x)));
+			return Ok((await images.ToListAsync()).Select(x => ImageToResponse(x)));
 		}
 
 

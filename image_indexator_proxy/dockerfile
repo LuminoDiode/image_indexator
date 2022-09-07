@@ -1,8 +1,0 @@
-FROM nginx
-
-WORKDIR /prox
-
-COPY ./conf .
-COPY ./logs .
-
-CMD ["nginx.exe"]
