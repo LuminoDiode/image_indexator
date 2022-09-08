@@ -19,6 +19,7 @@ services:
         target: backendsecrets.json
     environment:
       - ASPNETCORE_URLS=https://+:5002;http://+:5001
+      - ASPNETCORE_ENVIRONMENT=Production
 
   proxy:
     restart: always
@@ -33,6 +34,9 @@ services:
   database:
     restart: always
     image: postgres
+    environment:
+      POSTGRES_PASSWORD: qwerty_OVERRIDE_ME
+      POSTGRES_DB: image_indexator_db_OVERRIDE_ME
 
 secrets:
   backSecs:
