@@ -84,6 +84,7 @@ const ImageUploadBlock = ({ ...props }) => {
             console.log(result.data);
             setShowImageData(result.data);
             setIsUploadModalOpen(false);
+            ImageUploadBlock.currentFile = null;
             setShowBlockIsOpen(true);
         }
 
@@ -109,7 +110,7 @@ const ImageUploadBlock = ({ ...props }) => {
 
             <Modal
                 isOpen={isUploadModalOpen}
-                onRequestClose={() => { setIsUploadModalOpen(false); setImageMatadata(''); }}
+                onRequestClose={() => { setIsUploadModalOpen(false); setImageMatadata(''); ImageUploadBlock.currentFile = null;}}
                 style={modalCustomStyles}
             >
                 <img src={previewSrc} style={{ width: '100%', maxHeight: '50vh', objectFit: 'contain' }} />

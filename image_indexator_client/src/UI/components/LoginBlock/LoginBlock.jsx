@@ -9,11 +9,12 @@ const LoginBlock = ({ onSuccessCallback, onFailCallback, ...props }) => {
     const [jwtTokenCookie, setJwtTokenCookie] = useCookies(['JwtToken']);
     const [emailCookie, setEmailCookie] = useCookies(['Email']);
 
-    const [isAuthed, setAuthed] = useState(checkIsAuthed());
+    const [isAuthed, setAuthed] = useState(false);
     const [isLoginModalVisible, setLoginModalVisible] = useState(false)
 
     const onLoad = useEffect(() => {
         console.log('isAuthed=' + isAuthed);
+        setAuthed(checkIsAuthed);
     }, []);
 
     function checkIsAuthed() {
@@ -40,7 +41,6 @@ const LoginBlock = ({ onSuccessCallback, onFailCallback, ...props }) => {
             //console.log('Returned false from checkIsAuthed 1');
             return false;
         }
-
     }
 
     function logoutFunc() {
