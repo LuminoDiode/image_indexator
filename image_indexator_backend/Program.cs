@@ -1,10 +1,12 @@
 using image_indexator_backend.Repository;
+using image_indexator_backend.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,7 +19,11 @@ namespace image_indexator_backend
 		public static void Main(string[] args)
 		{
 			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-			builder.Configuration.AddJsonFile("/run/secrets/backendsecrets.json", false).Build();
+			builder.Configuration
+				.AddJsonFile("appsettings.json")
+				.AddJsonFile("/run/secrets/secrets.json", false)
+				.AddEnvironmentVariables()
+				.Build();
 
 			builder.Host.ConfigureLogging(opts =>
 			{
@@ -34,9 +40,7 @@ namespace image_indexator_backend
 				opts.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 			}).AddJwtBearer(opts =>
 			   {
-				   if (builder.Environment.IsDevelopment()) opts.RequireHttpsMetadata = false;
-				   else opts.RequireHttpsMetadata = true;
-		
+				   opts.RequireHttpsMetadata = false;
 				   opts.SaveToken = false;
 				   opts.TokenValidationParameters = new TokenValidationParameters
 				   {
@@ -44,7 +48,6 @@ namespace image_indexator_backend
 					   IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"])),
 					   ValidateAudience = false,
 					   ValidateIssuer = false,
-					   //NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier
 				   };
 			   }
 			).AddIdentityServerJwt();
@@ -63,19 +66,21 @@ namespace image_indexator_backend
 
 			builder.Services.AddControllers();
 
-			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen(opts =>
+			if (builder.Environment.IsDevelopment())
 			{
-				opts.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+				builder.Services.AddEndpointsApiExplorer();
+				builder.Services.AddSwaggerGen(opts =>
 				{
-					In = ParameterLocation.Header,
-					Description = "Please insert JWT with Bearer into field",
-					Name = "Authorization",
-					Type = SecuritySchemeType.Http,
-					Scheme = "Bearer",
-					BearerFormat = "JWT"
-				});
-				opts.AddSecurityRequirement(new OpenApiSecurityRequirement {
+					opts.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+					{
+						In = ParameterLocation.Header,
+						Description = "Please insert JWT with Bearer into field",
+						Name = "Authorization",
+						Type = SecuritySchemeType.Http,
+						Scheme = "Bearer",
+						BearerFormat = "JWT"
+					});
+					opts.AddSecurityRequirement(new OpenApiSecurityRequirement {
 				{
 					new OpenApiSecurityScheme
 					{
@@ -87,9 +92,16 @@ namespace image_indexator_backend
 					},
 					new string[] { }
 				}});
-			});
-
-			builder.Services.AddDirectoryBrowser();
+				});
+			}
+			if (builder.Environment.IsDevelopment())
+			{
+				builder.Services.AddDirectoryBrowser();
+			}
+			builder.Services.AddScoped<FileUrnService>();
+			builder.Services.AddSingleton<RecentImagesService>();
+			builder.Services.AddHostedService<RecentImagesService>(pr => pr.GetRequiredService<RecentImagesService>());
+			//builder.Services.AddSingleton<RecentImagesService>(pr => pr.GetService<RecentImagesService>() );
 
 			WebApplication app = builder.Build();
 
@@ -109,14 +121,13 @@ namespace image_indexator_backend
 			//app.UseHttpsRedirection();
 			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseStaticFiles("/staticfiles");
-			app.UseDirectoryBrowser("/staticfiles");
-			app.Use(async (context, next) => { await next.Invoke(); });
+			if (app.Environment.IsDevelopment())
+			{
+				app.UseDirectoryBrowser("/staticfiles");
+			}
 			app.UseAuthentication();
-			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseRouting();
-			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseAuthorization();
-			app.Use(async (context, next) => { await next.Invoke(); });
 
 			app.MapControllers();
 

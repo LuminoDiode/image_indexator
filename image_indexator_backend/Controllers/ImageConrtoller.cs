@@ -21,6 +21,10 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using image_indexator_backend.Models.Image;
+using image_indexator_backend.Services;
+using System.Diagnostics.Metrics;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.IO;
 
 namespace image_indexator_backend.Controllers
 {
@@ -37,20 +41,29 @@ namespace image_indexator_backend.Controllers
 		private readonly ILogger _logger;
 		private readonly IndexatorDbContext _dbContext;
 		private readonly IWebHostEnvironment _environment;
+		private readonly FileUrnService _urnService;
+		private readonly RecentImagesService _recentImagesService;
 
-
-		public ImageWebResponse ImageToResponse(Image image)
-		{
-			return new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = Path.Join(ImageController.downloadsPath, image.Id.ToString() + ".jpeg").Replace('\\', '/') };
-		}
-
-		public ImageController(IConfiguration config, ILogger<AuthController> logger, IndexatorDbContext dbContext, IWebHostEnvironment environment)
+		public ImageController(
+			IConfiguration config,
+			ILogger<AuthController> logger,
+			IndexatorDbContext dbContext,
+			IWebHostEnvironment environment,
+			FileUrnService urnService,
+			RecentImagesService recentImagesService)
 		{
 			_configuration = config;
 			_logger = logger;
 			_dbContext = dbContext;
-			this._environment = environment;
+			_environment = environment;
+			_urnService = urnService;
+			_recentImagesService = recentImagesService;
 		}
+
+
+		[NonAction]
+		private ImageWebResponse ImageToResponse(Image image) => new ImageWebResponse { Id = image.Id, Metadata = image.Metadata, Url = _urnService.UrnToGetImage(image) };
+
 
 		[HttpGet]
 		[AllowAnonymous]
@@ -76,16 +89,13 @@ namespace image_indexator_backend.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> SearchImages([FromBody][Required] ImageQueryRequest request)
 		{
-			var images = this._dbContext.Images.AsQueryable();
-
 			if (string.IsNullOrEmpty(request.Query))
-				images = images.OrderByDescending(img => img.MetadataVector.Rank(EF.Functions.WebSearchToTsQuery(request.Query)));
+				return Ok(_recentImagesService.Images.Take(request.maxCount ?? 12));
 			else
-				images = images.Select(x => x);
+				return Ok((await _dbContext.Images.OrderByDescending(img => img.MetadataVector.Rank(EF.Functions.WebSearchToTsQuery(request.Query))).Take(request.maxCount ?? 12)
+					.ToListAsync()).Select(x=> ImageToResponse(x)));
 
-			images = images.Take(request.maxCount ?? 100);
-
-			return Ok((await images.ToListAsync()).Select(x => ImageToResponse(x)));
+			// ! do not consolidate the Takes. The first works with IEnumerable, the second with IQueryable.
 		}
 
 
@@ -95,41 +105,54 @@ namespace image_indexator_backend.Controllers
 		[Consumes(@"multipart/form-data")]
 		public async Task<IActionResult> AddImage([FromForm][Required] IFormFile file, [FromForm][Required] string metadata)
 		{
+
 			if (file.ContentType != AllowedFormat)
 			{
 				ModelState.AddModelError("FileExtensionError", "Only jpeg files are allowed for this action.");
-				return BadRequest(ModelState);
+				return UnprocessableEntity(ModelState);
 			}
 
 			var fileSize = file.Length;
 			if (fileSize > maxImageSizeBytes) // size > 300 KB
 			{
 				ModelState.AddModelError("FileTooBig", $"File received by the server is too big. Max allowed size is {maxImageSizeBytes / 1024} KB.");
-				return BadRequest(ModelState);
+				return ValidationProblem(new ValidationProblemDetails(ModelState) { Status = 413 }); // HTTP/413 Request Entity Too Large
 			}
 
-			var added = await _dbContext.Images.AddAsync(new()
+			EntityEntry<Image> added = null!;
+			try
 			{
-				Metadata = metadata,
-				OwnerUserId = this.ControllerContext.HttpContext.User.Identities.FirstOrDefault(cl => cl.FindFirst("Id") != null)?.FindFirst("Id")?.Value ?? null
-			});
-			if (added is null)
-			{
-				ModelState.AddModelError("DatabaseError", "There was a error adding file to the database.");
-				return this.BadRequest(ModelState);
+				added = await _dbContext.Images.AddAsync(new()
+				{
+					Metadata = metadata,
+					OwnerUserId = this.ControllerContext.HttpContext.User.Identities.FirstOrDefault(cl => cl.FindFirst("Id") != null)?.FindFirst("Id")?.Value ?? null
+				});
+				if (added is null)
+				{
+					ModelState.AddModelError("DatabaseError", "There was a error adding file to the database.");
+					return this.BadRequest(ModelState);
+				}
+				await _dbContext.SaveChangesAsync();
+
+				var filePath = Path.Join(this._environment.WebRootPath,_urnService.UrnToSetImage(added.Entity));
+				var fileDirPath = Path.GetDirectoryName(filePath); Directory.CreateDirectory(fileDirPath); // ! ArgumentNullException - no special strategy needed
+
+				var myFile = System.IO.File.Create(filePath);
+				await file.OpenReadStream().CopyToAsync(myFile);
+				await myFile.DisposeAsync();
 			}
-			await _dbContext.SaveChangesAsync();
-
-
-			var newFilePath = Path.Join(this._environment.WebRootPath, uploadsPath);
-			var newFileName = Path.Join(newFilePath, added.Entity.Id.ToString() + ".jpeg");
-			_logger.LogInformation($"Saving user-added image as {newFileName}");
-			Directory.CreateDirectory(newFilePath);
-
-			var gotFileStream = file.OpenReadStream();
-			var myFile = System.IO.File.Create(newFileName);
-			await gotFileStream.CopyToAsync(myFile);
-			myFile.Close();
+			catch
+			{
+				if (added != null)
+				{
+					_dbContext.Images.Remove(added.Entity); // sets tracking status
+					if (System.IO.File.Exists(_urnService.UrnToSetImage(added.Entity)))
+					{
+						System.IO.File.Delete(_urnService.UrnToSetImage(added.Entity));
+					}
+				}
+				throw;
+			}
 			return await GetImage(added.Entity.Id);
 		}
 	}
