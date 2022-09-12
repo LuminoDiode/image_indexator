@@ -4,28 +4,31 @@ import axios from 'axios';
 import { useCookies } from 'react-cookie';
 
 const LoginForm = ({onSuccessCallback, onFailCallback, logoutFunction: logoutFunctionToAssign})=>{
+    console.log("Creating LoginForm.");
     const [loginValue,setLoginValue]=useState('');
     const [passwordValue, setPasswordValue] = useState('');
-    const [JwtCookie,setJwtCookie] = useCookies(['JwtToken']);
-    const [serverMessage,setServerMessage] = useState('')
-    const [serverMessageDisplay,setServerMessageDisplay] = useState('none')
+    const [getCookie,setCookie] = useCookies(['JwtToken']);
+    const [serverMessage,setServerMessage] = useState('');
+    const [isServerMessageDisplayed,setIsServerMessageDisplayed] = useState('none');
 
     async function tryLoginOrRigster() {
+        console.log(`Trying to send auth claims ${loginValue}:${passwordValue} to server.`)
         const dataToSend = {email:loginValue, password: passwordValue};
         const host = window.location.protocol + "//" + window.location.host;
         const req = await axios.post(host+'/api/auth',dataToSend,{headers: {'Content-Type': 'application/json' }});
-        console.log(req);
         const requestResult = req.data;
         if(requestResult.token){
-            setJwtCookie('JwtToken',requestResult.token);
-            setJwtCookie('Email',requestResult.email);
-            setServerMessageDisplay('none');
-            logoutFunctionToAssign = ()=>{setJwtCookie('JwtToken','');setJwtCookie('Email','');};
+            setCookie('JwtToken',requestResult.token);
+            setCookie('Email',requestResult.email);
+            setIsServerMessageDisplayed('none');
+            logoutFunctionToAssign = ()=>{setCookie('JwtToken','');setCookie('Email','');};
+            console.log("Login was successfull.");
             onSuccessCallback();
         }
         else{
-            setServerMessage(requestResult);
-            setServerMessageDisplay('block');
+            setServerMessage(`Error: HTTP ${req.status}.`);
+            setIsServerMessageDisplayed('block');
+            console.log("Login failed.");
             onFailCallback();
         }
     }
@@ -36,7 +39,7 @@ const LoginForm = ({onSuccessCallback, onFailCallback, logoutFunction: logoutFun
             <input className={cl.loginInput} type={'email'} placeholder='email' onChange={e=> setLoginValue(e.target.value)} value={loginValue}/>
             <input className={cl.loginInput} type={'password'} placeholder='password' onChange={e=> setPasswordValue(e.target.value)} value={passwordValue}/>
             <input className={cl.loginInput} type={'button'} onClick={tryLoginOrRigster} value={'Login/Register'}/>
-            <p value={serverMessage} style={{display:{serverMessageDisplay}}}></p>
+            <p value={serverMessage} style={{display:{serverMessageDisplay: isServerMessageDisplayed}}}></p>
         </form>
     )
 }

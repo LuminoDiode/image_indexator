@@ -9,6 +9,7 @@ import imageCompression from "browser-image-compression";
 import ImageShowModal from "../ImageShowBlock/ImageShowModal";
 
 const ImageUploadBlock = ({ ...props }) => {
+    console.log("Creating ImageUploadBlock.")
     const [getCookie, setCookie] = useCookies('');
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [showBlockIsOpen, setShowBlockIsOpen] = useState(false);
@@ -17,12 +18,11 @@ const ImageUploadBlock = ({ ...props }) => {
     const [showImageData, setShowImageData] = useState({});
     const [sendButtonDisplay, setSendButtonDisplay] = useState('block');
     const fileInputRef = useRef(null);
-    Modal.setAppElement('#root');
 
     const onLoad = useEffect(() => {
         async function createOcrWorker() {
             if (!ImageUploadBlock.ocrWorker) {
-                console.log('creating new OCR worker');
+                console.log('Creating new OCR worker.');
                 ImageUploadBlock.ocrWorker = Tesseract.createWorker({
                     logger: m => console.log(m)
                 });
@@ -38,33 +38,35 @@ const ImageUploadBlock = ({ ...props }) => {
     const onFileInputChange = (event) => onGettingFile(event.target.files[0]);
     const onTargetClick = () => fileInputRef.current.click();
 
-
-    const onGettingFile = async (file) => {
-        console.log(`onGettingFile(${file})`);
-
-        ImageUploadBlock.currentFile = file;
+    const openUploadModalForFile = (file)=>{
         setImageMatadata('');
         setSendButtonDisplay('block');
         setIsUploadModalOpen(true);
-        const imgUrl = URL.createObjectURL(file);
+        const imgUrl = URL.createObjectURL(file); 
         setPreviewSrc(imgUrl);
+    }
+    const onGettingFile = async (file) => {
+        console.log(`New file selected: \'${file.name}\'.`);
+        ImageUploadBlock.currentFile = file;
+        openUploadModalForFile(file);
+        console.log(`Calling ocrWorker for file: \'${file.name}\'`);
 
-        console.log('calling ocrWorker');
-        const recogResult = (await ImageUploadBlock.ocrWorker.recognize(imgUrl)).data.text;
-        if (imageMetadata == '') {
-            console.log('imageMetadata is empty and will be replaced with recognition result');
+        const recogResult = (await ImageUploadBlock.ocrWorker.recognize(previewSrc)).data.text;
+        if (!imageMetadata) {
+            console.log('Recognition result is ready and will be placed in the input element.');
             setImageMatadata(recogResult);
         } else {
-            console.log(`imageMetadata=${imageMetadata} is not empty and will not be replaced with recognition result`);
+            console.log('Recognition result is ready but will NOT be placed in the input element because it is not empty.');
         }
     }
 
     const sendRequest = async () => {
+        console.Console('Beginning sending file to server.');
         setSendButtonDisplay('none');
 
         const options = {
-            maxSizeMB: 0.3,
-            maxWidthOrHeight: 1200,
+            maxSizeMB: 0.1,
+            maxWidthOrHeight: 1000,
             useWebWorker: true,
             fileType: 'image/jpeg'
         }
@@ -80,15 +82,18 @@ const ImageUploadBlock = ({ ...props }) => {
         });
 
         if (result.status >= 200 && result.status < 300) {
-            console.log("Server returned put result:");
-            console.log(result.data);
+            console.log("Image pushed to server successfully.");
             setShowImageData(result.data);
-            setIsUploadModalOpen(false);
-            ImageUploadBlock.currentFile = null;
             setShowBlockIsOpen(true);
+            setImageMatadata('');
+            ImageUploadBlock.currentFile = null;
         }
-
-        setImageMatadata('');
+        else{
+            console.log(`Error occured while pushing image: server returned HTTP ${result.status}.`)
+            onGettingFile(ImageUploadBlock.currentFile);
+        }
+        setIsUploadModalOpen(false);
+        ImageUploadBlock.currentFile = null;
     }
 
 
@@ -124,10 +129,7 @@ const ImageUploadBlock = ({ ...props }) => {
                     imageData={showImageData}
                     isOpen={showBlockIsOpen}
                     onRequestClose={() => setShowBlockIsOpen(false)}
-                    style={modalCustomStyles}
-                > </ImageShowModal>
-                :
-                {}
+                    style={modalCustomStyles} /> : <span/>
             }
         </div>
     )

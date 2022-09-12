@@ -8,7 +8,7 @@ import './App.css';
 
 function App() {
   Modal.setAppElement('#root');
-
+  
   return (
     <div>
       <CookieConsent location='bottom' cookieName='CookiesAccepted' expires={60} style={{ fontFamily: 'Courier New, Courier, monospace' }}>

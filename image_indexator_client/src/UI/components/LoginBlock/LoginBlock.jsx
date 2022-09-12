@@ -6,52 +6,50 @@ import cl from './LoginBlock.module.css';
 import { useCookies } from 'react-cookie';
 
 const LoginBlock = ({ onSuccessCallback, onFailCallback, ...props }) => {
-    const [jwtTokenCookie, setJwtTokenCookie] = useCookies(['JwtToken']);
-    const [emailCookie, setEmailCookie] = useCookies(['Email']);
-
+    console.log('Creating LoginBlock.');
+    const [getCookie, setCookie] = useCookies();
     const [isAuthed, setAuthed] = useState(false);
     const [isLoginModalVisible, setLoginModalVisible] = useState(false)
 
     const onLoad = useEffect(() => {
-        console.log('isAuthed=' + isAuthed);
+        console.log("Initializing LoginBlock");
         setAuthed(checkIsAuthed);
+        console.log(`Login block current state is \'${isAuthed ? `AUTHED AS ${getCookie['Email']}` : `NOT AUTHED`}\'.`)
     }, []);
 
-    function checkIsAuthed() {
-       // console.log('in checkIsAuthed func');
-        var check;
+    async function checkIsAuthed() {
+        if (!getCookie['Email']) return false;
+        var statusCode;
         try {
+            console.log('Trying to validate JWT by sending it to server.');
             const host = window.location.protocol + "//" + window.location.host;
-            check = (axios.get(host+'/api/auth', {
-                headers: { 'Authorization': 'Bearer ' + jwtTokenCookie['JwtToken'] }
-            })).then(result=> {
-                check=result.status;
-                //console.log(result);
-                if (check == 200) {
-                    //console.log('Returned true from checkIsAuthed 2');
-                    return true;
-                }
-                else {
-                   // console.log('Returned false from checkIsAuthed 3');
-                    return false;
-                }
-            });
+            statusCode = (await axios.get(host + '/api/auth', {
+                headers: { 'Authorization': 'Bearer ' + getCookie['JwtToken'] }
+            })).status;
         }
         catch {
-            //console.log('Returned false from checkIsAuthed 1');
+            console.Console("Error occured while trying to send existing JWT to server for validation.");
+            return false;
+        }
+
+        if (statusCode == 200) {
+            console.log("Server validated existing JWT successfully.");
+            return true;
+        } else {
+            console.log("Server rejected existing JWT.");
             return false;
         }
     }
 
     function logoutFunc() {
+        setCookie('JwtToken', '');
+        setCookie('Email', '');
         setAuthed(false);
-        setEmailCookie('JwtToken', '');
-        setEmailCookie('Email', '');
     }
 
     return (
         <div {...props}>
-            {(isAuthed == false) ?
+            {(!isAuthed) ?
                 <div>
                     <div>
                         <button className={cl.loginBtn} onClick={() => { console.log(!isLoginModalVisible); setLoginModalVisible(!isLoginModalVisible); }}>Login</button>
@@ -65,7 +63,7 @@ const LoginBlock = ({ onSuccessCallback, onFailCallback, ...props }) => {
                 :
                 <div>
                     <span>
-                        Account: {emailCookie['Email']}
+                        Account: {getCookie['Email']}
                     </span>
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <button className={cl.loginBtn} onClick={e => { logoutFunc(); setAuthed(false); e.stopPropagation(); }}>Logout</button>
