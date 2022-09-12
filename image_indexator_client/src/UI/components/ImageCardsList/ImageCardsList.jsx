@@ -6,9 +6,9 @@ const ImageCardsList = ({imagesList,...props})=>{
     console.log(`Creating ImageCardsList with ${imagesList.length} images.`)
     return(
         <div className={cl.imageCardsList}>
-            {imagesList.map((img,index) => 
-                <ImageCard key={index} metaText={img.metadata} imageUrl={img.url}/>
-            )}
+            {imagesList ? imagesList.map((img,index) => 
+                <ImageCard key={index} metaText={img.metadata} imageUrl={img.url}/>) : <span/>
+            }
         </div>
     )
 }

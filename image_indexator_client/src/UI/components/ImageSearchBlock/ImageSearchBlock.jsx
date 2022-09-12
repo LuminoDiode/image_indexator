@@ -9,7 +9,7 @@ const ImageSearchBlock = ({ ...props }) => {
     console.log(`Creating ImageSearchBlock.`)
     const [userQuery, setQuery] = useState('');
     const [getCookie,setCookie] = useCookies();
-    const [imagesList, setImagesList] = useState([{ metaText: '', imageUrl: '' }]);
+    const [imagesList, setImagesList] = useState([]);
 
     const onPageLoad = useEffect(() => {
         console.log(`Initializing ImageSearchBlock, sending empty query to server to receive recent images.`)
@@ -19,13 +19,16 @@ const ImageSearchBlock = ({ ...props }) => {
     async function submitQuery(userQr) {
         console.log(`Submitting user query to server: \'${userQr}\'.`);
         const host = window.location.protocol + "//" + window.location.host;
-        const images = (await axios.post(host + '/api/image', {query: userQr}, {
+        const req = (await axios.post(host + '/api/image', {query: userQr}, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + getCookie['JwtToken']
             }
-        })).data;
-        setImagesList(images);
+        }));
+        if(!(req.status>=200 && req.status<300)){
+            const images=req.data;
+            if(images.length>0) setImagesList(images);
+        }
     }
 
     return (

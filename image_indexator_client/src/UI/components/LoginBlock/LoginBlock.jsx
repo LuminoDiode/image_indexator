@@ -13,8 +13,10 @@ const LoginBlock = ({ onSuccessCallback, onFailCallback, ...props }) => {
 
     const onLoad = useEffect(() => {
         console.log("Initializing LoginBlock");
-        setAuthed(checkIsAuthed);
-        console.log(`Login block current state is \'${isAuthed ? `AUTHED AS ${getCookie['Email']}` : `NOT AUTHED`}\'.`)
+        checkIsAuthed().then(result=>{
+            setAuthed(result);
+            console.log(`Login block current state is \'${isAuthed ? `AUTHED AS ${getCookie['Email']}` : `NOT AUTHED`}\'.`)
+        })
     }, []);
 
     async function checkIsAuthed() {
