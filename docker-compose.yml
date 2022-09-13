@@ -21,7 +21,7 @@ services:
       - ASPNETCORE_URLS=http://+:5001
       - ASPNETCORE_ENVIRONMENT=Production
     volumes:
-      - image_indexator_user_added:wwwroot/user_added
+      - image_indexator_user_added:/app/wwwroot/user_added/
 
   proxy:
     restart: always
@@ -39,10 +39,17 @@ services:
       POSTGRES_PASSWORD: qwerty_OVERRIDE_ME
       POSTGRES_DB: image_indexator_db_OVERRIDE_ME
     volumes:
-      - image_indexator_database:var/lib/postgresql/data
+      - image_indexator_database:/var/lib/postgresql/data/
 
 secrets:
   backSecs:
     file: ./backendsecrets.json
+    
+volumes:
+    image_indexator_user_added:
+        external: false
+    image_indexator_database:
+        external: false
+
 
   
