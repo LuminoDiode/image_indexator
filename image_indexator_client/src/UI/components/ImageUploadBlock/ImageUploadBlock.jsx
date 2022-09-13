@@ -34,15 +34,15 @@ const ImageUploadBlock = ({ ...props }) => {
         createOcrWorker();
     });
 
-    const onDrop = (files, event) => onGettingFile(files[0]);
-    const onFileInputChange = (event) => onGettingFile(event.target.files[0]);
+    const onDrop = (files, event) => { onGettingFile(files[0]); event.target.value = ""; }
+    const onFileInputChange = (event) => { onGettingFile(event.target.files[0]); event.target.value = ""; }
     const onTargetClick = () => fileInputRef.current.click();
 
-    const openUploadModalForFile = (file)=>{
+    const openUploadModalForFile = (file) => {
         setImageMatadata('');
         setSendButtonDisplay('block');
         setIsUploadModalOpen(true);
-        const imgUrl = URL.createObjectURL(file); 
+        const imgUrl = URL.createObjectURL(file);
         setPreviewSrc(imgUrl);
     }
     const onGettingFile = async (file) => {
@@ -61,7 +61,7 @@ const ImageUploadBlock = ({ ...props }) => {
     }
 
     const sendRequest = async () => {
-        console.Console('Beginning sending file to server.');
+        console.log('Beginning sending file to server.');
         setSendButtonDisplay('none');
 
         const options = {
@@ -74,7 +74,7 @@ const ImageUploadBlock = ({ ...props }) => {
         console.log(`File converted to JPEG and compressed to ${compressedFile.size / 1024} KB`);
 
         const host = window.location.protocol + "//" + window.location.host;
-        var result = await axios.put(host+'/api/image', { file: compressedFile, metadata: imageMetadata }, {
+        var result = await axios.put(host + '/api/image', { file: compressedFile, metadata: imageMetadata }, {
             headers: {
                 'content-type': 'multipart/form-data',
                 'Authorization': 'Bearer ' + getCookie['JwtToken']
@@ -88,7 +88,7 @@ const ImageUploadBlock = ({ ...props }) => {
             setImageMatadata('');
             ImageUploadBlock.currentFile = null;
         }
-        else{
+        else {
             console.log(`Error occured while pushing image: server returned HTTP ${result.status}.`)
             onGettingFile(ImageUploadBlock.currentFile);
         }
@@ -115,7 +115,7 @@ const ImageUploadBlock = ({ ...props }) => {
 
             <Modal
                 isOpen={isUploadModalOpen}
-                onRequestClose={() => { setIsUploadModalOpen(false); setImageMatadata(''); ImageUploadBlock.currentFile = null;}}
+                onRequestClose={() => { setIsUploadModalOpen(false); setImageMatadata(''); ImageUploadBlock.currentFile = null; }}
                 style={modalCustomStyles}
             >
                 <img src={previewSrc} style={{ width: '100%', maxHeight: '50vh', objectFit: 'contain' }} />
@@ -129,7 +129,7 @@ const ImageUploadBlock = ({ ...props }) => {
                     imageData={showImageData}
                     isOpen={showBlockIsOpen}
                     onRequestClose={() => setShowBlockIsOpen(false)}
-                    style={modalCustomStyles} /> : <span/>
+                    style={modalCustomStyles} /> : <span />
             }
         </div>
     )

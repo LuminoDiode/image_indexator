@@ -12,5 +12,4 @@ const ImageShowModal = ({ imageData, ...props }) => {
     )
 }
 
-
 export default ImageShowModal;
