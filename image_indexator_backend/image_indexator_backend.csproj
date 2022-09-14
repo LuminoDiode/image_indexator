@@ -31,7 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Middleware\" />
     <Folder Include="Models\Image\NewFolder\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>

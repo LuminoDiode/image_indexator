@@ -7,7 +7,7 @@
     font-weight: bolder;
     font-size: calc(10px + 1vw);
     background-color: inherit;
-    border: 5px solid darkslategrey;
+    border: 5px solid darkslategray;
     border-radius: 15px;
     align-self: center;
 }

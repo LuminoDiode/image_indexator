@@ -23,9 +23,9 @@ namespace image_indexator_backend.Services
 		private List<ImageWebResponse> _images;
 		public ReadOnlyCollection<ImageWebResponse> Images => _images.AsReadOnly();
 		
-		public RecentImagesService(IndexatorDbContext dbContext, IConfiguration configuration, FileUrnService urnService, ILogger<RecentImagesService>logger)
+		public RecentImagesService(IServiceProvider dbContextFactory, IConfiguration configuration, FileUrnService urnService, ILogger<RecentImagesService>logger)
 		{
-			_dbContext = dbContext;
+			_dbContext = dbContextFactory.CreateScope().ServiceProvider.GetRequiredService<IndexatorDbContext>();
 			_configuration = configuration;
 			_urnService = urnService;
 			_images = new List<ImageWebResponse>(_numOfImagesStored);
@@ -34,7 +34,7 @@ namespace image_indexator_backend.Services
 		private async Task updateFromDb()
 		{
 			_images = (await _dbContext.Images.OrderByDescending(x=> x.Id).Take(_numOfImagesStored).ToListAsync()).Select(i=> new ImageWebResponse { Id = i.Id, Metadata = i.Metadata, Url = _urnService.UrnToGetImage(i) }).ToList();
-			_logger.LogInformation($"Updated from db. Current stored id's: {string.Join(' ', _images.Select(x => x.Id))}");
+			_logger.LogInformation($"Updated from db. Currently storing {_images.Count} entities.");
 		}
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{

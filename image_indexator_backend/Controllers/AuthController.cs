@@ -1,6 +1,5 @@
-﻿//using image_indexator_backend.Services;
-using image_indexator_backend.Helpers;
-using image_indexator_backend.Models.Auth;
+﻿using image_indexator_backend.Models.Auth;
+using image_indexator_backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,12 +20,14 @@ namespace image_indexator_backend.Controllers
 		private readonly UserManager<IdentityUser> _userManager;
 		private readonly IConfiguration _configuration;
 		private readonly ILogger _logger;
+		private readonly JwtService _jwtService;
 
-		public AuthController(UserManager<IdentityUser> userMgr, IConfiguration config, ILogger<AuthController> logger)
+		public AuthController(UserManager<IdentityUser> userMgr,JwtService jwtService, IConfiguration config, ILogger<AuthController> logger)
 		{
 			_userManager = userMgr;
 			_configuration = config;
 			_logger = logger;
+			_jwtService= jwtService;
 		}
 
 		[HttpGet]
@@ -44,7 +45,7 @@ namespace image_indexator_backend.Controllers
 				bool passwordIsCorrect = await _userManager.CheckPasswordAsync(usr, request.Password);
 				if (passwordIsCorrect)
 				{
-					var response = new AuthenticateResponse { Id = usr.Id, Email = usr.Email, Token = JwtHelper.GenerateJwtToken(_configuration, usr) };
+					var response = new AuthenticateResponse { Id = usr.Id, Email = usr.Email, Token = _jwtService.GenerateJwtToken(usr) };
 					_logger.LogDebug($"Created JWT token \'{response.Token}\' for user {ToJsonString(usr)} and sended to \'{base.HttpContext.Connection.RemoteIpAddress}\'.");
 					return Ok(response);
 				}

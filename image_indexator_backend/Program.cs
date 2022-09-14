@@ -45,7 +45,7 @@ namespace image_indexator_backend
 				   opts.TokenValidationParameters = new TokenValidationParameters
 				   {
 					   ValidateIssuerSigningKey = true,
-					   IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"])),
+					   IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JwtServiceSettings:signingKey"])),
 					   ValidateAudience = false,
 					   ValidateIssuer = false,
 				   };
@@ -62,7 +62,6 @@ namespace image_indexator_backend
 			})
 				.AddEntityFrameworkStores<IndexatorDbContext>()
 				.AddDefaultTokenProviders();
-
 
 			builder.Services.AddControllers();
 
@@ -93,15 +92,15 @@ namespace image_indexator_backend
 					new string[] { }
 				}});
 				});
-			}
-			if (builder.Environment.IsDevelopment())
-			{
 				builder.Services.AddDirectoryBrowser();
 			}
-			builder.Services.AddScoped<FileUrnService>();
+
+			builder.Services.AddSingleton<FileUrnService>();
+			builder.Services.AddSingleton<JwtService>();
 			builder.Services.AddSingleton<RecentImagesService>();
 			builder.Services.AddHostedService<RecentImagesService>(pr => pr.GetRequiredService<RecentImagesService>());
-			//builder.Services.AddSingleton<RecentImagesService>(pr => pr.GetService<RecentImagesService>() );
+
+
 
 			WebApplication app = builder.Build();
 
@@ -118,20 +117,16 @@ namespace image_indexator_backend
 				opts.AllowAnyHeader();
 			});
 
-			//app.UseHttpsRedirection();
-			app.Use(async (context, next) => { await next.Invoke(); });
 			app.UseStaticFiles("/staticfiles");
 			if (app.Environment.IsDevelopment())
-			{
 				app.UseDirectoryBrowser("/staticfiles");
-			}
 			app.UseAuthentication();
 			app.UseRouting();
 			app.UseAuthorization();
 
 			app.MapControllers();
 
-			app.Services.CreateScope().ServiceProvider.GetRequiredService<IndexatorDbContext>().Database.EnsureCreated();
+			app.Services.CreateScope().ServiceProvider.GetRequiredService<IndexatorDbContext>().Database.Migrate();
 
 			app.Run();
 		}

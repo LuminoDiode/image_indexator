@@ -50,6 +50,3 @@ volumes:
         external: false
     image_indexator_database:
         external: false
-
-
-  

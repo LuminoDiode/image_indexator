@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using image_indexator_backend.Helpers;
 using image_indexator_backend.Models.Auth;
 using image_indexator_backend.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -135,7 +134,7 @@ namespace image_indexator_backend.Controllers
 				await _dbContext.SaveChangesAsync();
 
 				var filePath = Path.Join(this._environment.WebRootPath,_urnService.UrnToSetImage(added.Entity));
-				var fileDirPath = Path.GetDirectoryName(filePath); Directory.CreateDirectory(fileDirPath); // ! ArgumentNullException - no special strategy needed
+				var fileDirPath = Path.GetDirectoryName(filePath); Directory.CreateDirectory(fileDirPath!); // ! ArgumentNullException - no special strategy needed
 
 				var myFile = System.IO.File.Create(filePath);
 				await file.OpenReadStream().CopyToAsync(myFile);

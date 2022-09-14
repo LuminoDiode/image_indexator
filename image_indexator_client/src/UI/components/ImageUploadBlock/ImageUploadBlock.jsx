@@ -65,7 +65,7 @@ const ImageUploadBlock = ({ ...props }) => {
         setSendButtonDisplay('none');
 
         const options = {
-            maxSizeMB: 0.1,
+            maxSizeMB: 0.08,
             maxWidthOrHeight: 1000,
             useWebWorker: true,
             fileType: 'image/jpeg'

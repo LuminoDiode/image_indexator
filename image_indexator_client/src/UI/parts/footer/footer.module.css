@@ -1,5 +1,5 @@
 .appFooter{
-    background-color: darkslategrey;
+    background-color: black;
     min-height: 10vh;
     font-family: 'Courier New', Courier, monospace;
 }
@@ -7,4 +7,5 @@
     width: 100%;
     text-align: center;
     font-size:2.5vh;
+    color:whitesmoke;
 }

@@ -8,7 +8,7 @@ namespace image_indexator_backend.Services
 		private IConfiguration _configuration;
 
 		private string _staticFilesUrnPath => this._configuration.GetSection(nameof(StorageSettings))?.Get<StorageSettings?>()?.staticFilesUrnPath ?? "staticfiles";
-		private string _imageUrnDirectoryPath => this._configuration.GetSection(nameof(StorageSettings))?.Get<StorageSettings?>()?.imagesDirectoryPath ?? "images";
+		private string _imageUrnDirectoryPath => this._configuration.GetSection(nameof(StorageSettings))?.Get<StorageSettings?>()?.imagesDirectoryPath ?? "user_added/images";
 		private string _imageFileExtension => this._configuration.GetSection(nameof(StorageSettings))?.Get<StorageSettings?>()?.imageFileExtension ?? "jpeg";
 		public FileUrnService(IConfiguration configuration)
 		{
