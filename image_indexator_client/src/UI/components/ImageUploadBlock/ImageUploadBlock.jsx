@@ -31,7 +31,7 @@ const ImageUploadBlock = ({ ...props }) => {
                 await ImageUploadBlock.ocrWorker.initialize('eng+rus');
             }
         };
-        createOcrWorker();
+        // createOcrWorker();
     });
 
     const onDrop = (files, event) => { onGettingFile(files[0]); event.target.value = ""; }
@@ -51,10 +51,10 @@ const ImageUploadBlock = ({ ...props }) => {
         openUploadModalForFile(file);
         console.log(`Calling ocrWorker for file: \'${file.name}\'`);
 
-        const recogResult = (await ImageUploadBlock.ocrWorker.recognize(previewSrc)).data.text;
+        // const recogResult = (await ImageUploadBlock.ocrWorker.recognize(previewSrc)).data.text;
         if (!imageMetadata) {
             console.log('Recognition result is ready and will be placed in the input element.');
-            setImageMatadata(recogResult);
+           // setImageMatadata(recogResult);
         } else {
             console.log('Recognition result is ready but will NOT be placed in the input element because it is not empty.');
         }
@@ -135,7 +135,7 @@ const ImageUploadBlock = ({ ...props }) => {
     )
 }
 
-ImageUploadBlock.ocrWorker = null;
-ImageUploadBlock.currentFile = null;
+//ImageUploadBlock.ocrWorker = null;
+//ImageUploadBlock.currentFile = null;
 
 export default ImageUploadBlock;

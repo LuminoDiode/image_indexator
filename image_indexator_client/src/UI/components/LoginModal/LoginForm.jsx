@@ -20,6 +20,7 @@ const LoginForm = ({onSuccessCallback, onFailCallback, logoutFunction: logoutFun
         if(requestResult.token){
             setCookie('JwtToken',requestResult.token);
             setCookie('Email',requestResult.email);
+            setCookie('Id',requestResult.id);
             setIsServerMessageDisplayed('none');
             logoutFunctionToAssign = ()=>{setCookie('JwtToken','');setCookie('Email','');};
             console.log("Login was successfull.");

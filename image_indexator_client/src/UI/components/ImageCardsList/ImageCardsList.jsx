@@ -12,7 +12,7 @@ const ImageCardsList = ({imagesList,...props})=>{
     return(
         <div className={cl.imageCardsList}>
             {imagesList ? imagesList.map((img,index) => 
-                <ImageCard key={index} metaText={img.metadata} imageUrl={img.url}/>) : <span/>
+                <ImageCard key={index} metaText={img.metadata} imageUrl={img.url} ownerId={img.ownerId} imageId={img.id} />) : <span/>
             }
         </div>
     )

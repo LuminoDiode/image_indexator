@@ -31,9 +31,17 @@ namespace image_indexator_backend.Services
 			_images = new List<ImageWebResponse>(_numOfImagesStored);
 			_logger = logger;
 		}
+
+		public void RemoveById(int imageId)
+		{
+			var found = _images.Find(x => x.Id == imageId);
+			if(found is not null)
+				this._images.Remove(found);
+		}
+
 		private async Task updateFromDb()
 		{
-			_images = (await _dbContext.Images.OrderByDescending(x=> x.Id).Take(_numOfImagesStored).ToListAsync()).Select(i=> new ImageWebResponse { Id = i.Id, Metadata = i.Metadata, Url = _urnService.UrnToGetImage(i) }).ToList();
+			_images = (await _dbContext.Images.OrderByDescending(x=> x.Id).Take(_numOfImagesStored).ToListAsync()).Select(i=> new ImageWebResponse { Id = i.Id, Metadata = i.Metadata, Url = _urnService.UrnToGetImage(i), OwnerId = i.OwnerUserId }).ToList();
 			_logger.LogInformation($"Updated from db. Currently storing {_images.Count} entities.");
 		}
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)

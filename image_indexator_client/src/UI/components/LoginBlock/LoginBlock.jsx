@@ -46,6 +46,7 @@ const LoginBlock = ({ onSuccessCallback, onFailCallback, ...props }) => {
     function logoutFunc() {
         setCookie('JwtToken', '');
         setCookie('Email', '');
+        setCookie('Id', '');
         setAuthed(false);
     }
 
